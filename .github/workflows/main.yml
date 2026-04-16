@@ -1,0 +1,33 @@
+name: Unzip Files
+
+on:
+  push:
+    paths:
+      - '*.zip'
+
+permissions:
+  contents: write
+
+jobs:
+  unzip:
+    if: "!contains(github.event.head_commit.message, 'Auto unzip')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 解压并删除ZIP
+        run: |
+          rm -rf extracted
+          for file in *.zip; do
+            unzip -o "$file" -d extracted
+            rm "$file"
+          done
+
+      - name: 提交更改
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Auto unzip"
+          git push
